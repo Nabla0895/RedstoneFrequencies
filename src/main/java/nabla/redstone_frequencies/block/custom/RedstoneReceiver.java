@@ -49,7 +49,7 @@ public class RedstoneReceiver extends BlockWithEntity implements BlockEntityProv
 //    }
 
     @Override
-    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
+    protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
         if (world.isClient) return ActionResult.SUCCESS;
 
         if (world.getBlockEntity(pos) instanceof RedstoneReceiverEntity receiver) {
@@ -61,16 +61,15 @@ public class RedstoneReceiver extends BlockWithEntity implements BlockEntityProv
                 receiver.setFreq(freq);
                 player.sendMessage(Text.literal("Set Frequency to:" + freq), true);
                 return ActionResult.SUCCESS;
+            } else { //Change Frequency by right-clicking without Items
+                if (player.isSneaking()) { //Decrease by 1 if sneaking
+                    int currentFreq = receiver.getFreq();
+                    receiver.setFreq(currentFreq > 0 ? currentFreq - 1 : 0);
+                } else {
+                    receiver.setFreq(receiver.getFreq() + 1);
+                }
+                player.sendMessage(Text.literal("Receive-Frequency: " + receiver.getFreq()), true);
             }
-
-            //Change Frequency by right-clicking without Items
-            if (player.isSneaking()) { //Decrease by 1 if sneaking
-                int currentFreq = receiver.getFreq();
-                receiver.setFreq(currentFreq > 0 ? currentFreq - 1 : 0);
-            } else {
-                receiver.setFreq(receiver.getFreq() + 1);
-            }
-            player.sendMessage(Text.literal("Receive-Frequency: " + receiver.getFreq()), true);
         }
         return ActionResult.SUCCESS;
     }
@@ -97,7 +96,7 @@ public class RedstoneReceiver extends BlockWithEntity implements BlockEntityProv
 
     @Override
     public @Nullable BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
-        return null;
+        return new RedstoneReceiverEntity(pos, state);
     }
 
     @Override

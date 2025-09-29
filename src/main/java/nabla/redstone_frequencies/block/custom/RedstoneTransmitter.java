@@ -25,6 +25,7 @@ public class RedstoneTransmitter extends BlockWithEntity implements BlockEntityP
 
     public RedstoneTransmitter(Settings settings) {
         super(settings);
+        setDefaultState(this.getDefaultState().with(POWER, false));
     }
 
 
@@ -33,21 +34,8 @@ public class RedstoneTransmitter extends BlockWithEntity implements BlockEntityP
         return CODEC;
     }
 
-
     @Override
-    protected void neighborUpdate(BlockState state, World world, BlockPos pos, Block sourceBlock, @Nullable WireOrientation wireOrientation, boolean notify) {
-        if (!world.isClient) {
-            final BlockEntity entity = world.getBlockEntity(pos);
-            if (entity instanceof RedstoneTransmitterEntity) {
-                final RedstoneTransmitterEntity emitter = (RedstoneTransmitterEntity) entity;
-                emitter.redstoneUpdate(world.isReceivingRedstonePower(pos));
-            }
-        }
-    }
-
-
-    @Override
-    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
+    protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
         if (world.isClient) return ActionResult.SUCCESS;
 
         if (world.getBlockEntity(pos) instanceof RedstoneTransmitterEntity transmitter) {
@@ -59,18 +47,46 @@ public class RedstoneTransmitter extends BlockWithEntity implements BlockEntityP
                 transmitter.setFreq(freq);
                 player.sendMessage(Text.literal("Set Frequency to:" + freq), true);
                 return ActionResult.SUCCESS;
+            } else { //Change Frequency by right-clicking without item
+                if (player.isSneaking()) { //Decrease by 1 if sneaking
+                    int currentFreq = transmitter.getFreq();
+                    transmitter.setFreq(currentFreq > 0 ? currentFreq - 1 : 0);
+                } else { //Increase by 1 without sneaking
+                    transmitter.setFreq(transmitter.getFreq() +1);
+                }
+                player.sendMessage(Text.literal("Send-Frequency: " + transmitter.getFreq()), true);
             }
-
-            //Change Frequency by right-clicking without item
-            if (player.isSneaking()) { //Decrease by 1 if sneaking
-                int currentFreq = transmitter.getFreq();
-                transmitter.setFreq(currentFreq > 0 ? currentFreq - 1 : 0);
-            } else { //Increase by 1 without sneaking
-                transmitter.setFreq(transmitter.getFreq() +1);
-            }
-            player.sendMessage(Text.literal("Send-Frequency: " + transmitter.getFreq()), true);
         }
         return ActionResult.SUCCESS;
+    }
+
+    @Override
+    protected void onBlockAdded(BlockState state, World world, BlockPos pos, BlockState oldState, boolean notify) {
+        if (oldState.isOf(state.getBlock())) {
+            if (!world.isClient) {
+                updateState(world, pos, state);
+            }
+        }
+    }
+
+    @Override
+    protected void neighborUpdate(BlockState state, World world, BlockPos pos, Block sourceBlock, @Nullable WireOrientation wireOrientation, boolean notify) {
+        if (!world.isClient) {
+            updateState(world, pos, state);
+        }
+    }
+
+    private void updateState(World world, BlockPos pos, BlockState state) {
+        boolean isReceivingPower = world.isReceivingRedstonePower(pos);
+        if (isReceivingPower != state.get(POWER)) {
+            BlockState newState = state.with(POWER, isReceivingPower);
+            world.setBlockState(pos, newState, 2);
+
+            BlockEntity be = world.getBlockEntity(pos);
+            if (be instanceof RedstoneTransmitterEntity transmitter) {
+                transmitter.redstoneUpdate(isReceivingPower);
+            }
+        }
     }
 
     @Override

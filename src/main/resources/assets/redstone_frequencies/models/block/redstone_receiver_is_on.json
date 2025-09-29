@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "redstone_frequencies:block/redstone_receiver_is_on"
+  }
+}

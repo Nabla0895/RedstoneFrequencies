@@ -1,7 +1,10 @@
 {
   "variants": {
-    "": {
+    "power=false": {
       "model": "redstone_frequencies:block/redstone_receiver"
+    },
+    "power=true": {
+      "model": "redstone_frequencies:block/redstone_receiver_is_on"
     }
   }
 }

@@ -9,19 +9,18 @@ import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.storage.ReadView;
 import net.minecraft.storage.WriteView;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
-public class RedstoneTransmitterEntity extends BlockEntity {
-    public RedstoneTransmitterEntity(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.TRANSMITTER_BE, pos, state);
+public class RedstoneReceiverEntity extends BlockEntity{
+    public RedstoneReceiverEntity(BlockPos pos, BlockState state) {
+        super(ModBlockEntities.RECEIVER_BE, pos, state);
     }
 
     private int freq = 0;
-
 
     @Override
     protected void writeData(WriteView view) {
@@ -35,20 +34,18 @@ public class RedstoneTransmitterEntity extends BlockEntity {
         freq = view.getInt("Frequency", 0);
     }
 
-    public int getFreq() {
-        return this.freq;
-    }
-
-    public void setFreq(int freq) {
-        this.freq = freq;
-        markDirty();
-    }
-
-    public void redstoneUpdate(final boolean enabled) {
-        if (this.world != null && !this.world.isClient()) {
-            //Send Signal to FrequencyManager
-            FrequencyManager.broadcast((ServerWorld) this.world, this.freq, enabled);
+    public void onServerStart(World world) {
+        if (!world.isClient()) {
+            FrequencyManager.addReceiver(this);
         }
+    }
+
+    @Override
+    public void markRemoved() {
+        if (world != null && !world.isClient()) {
+            FrequencyManager.removeReceiver(this);
+        }
+        super.markRemoved();
     }
 
     @Nullable
@@ -61,4 +58,15 @@ public class RedstoneTransmitterEntity extends BlockEntity {
     public NbtCompound toInitialChunkDataNbt(RegistryWrapper.WrapperLookup registryLookup) {
         return createNbt(registryLookup);
     }
+
+    public int getFreq() {
+        return this.freq;
+    }
+
+    public void setFreq(int freq) {
+        this.freq = freq;
+        markDirty();
+    }
+
+
 }

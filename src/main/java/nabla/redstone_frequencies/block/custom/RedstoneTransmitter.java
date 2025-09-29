@@ -8,6 +8,8 @@ import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.state.StateManager;
+import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -19,6 +21,8 @@ import org.jetbrains.annotations.Nullable;
 
 public class RedstoneTransmitter extends BlockWithEntity implements BlockEntityProvider {
     public static final MapCodec<RedstoneTransmitter> CODEC = RedstoneTransmitter.createCodec(RedstoneTransmitter::new);
+    public static final BooleanProperty POWER = BooleanProperty.of("power");
+
     public RedstoneTransmitter(Settings settings) {
         super(settings);
     }
@@ -42,60 +46,31 @@ public class RedstoneTransmitter extends BlockWithEntity implements BlockEntityP
     }
 
 
-
-    @Override
-    protected ActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
-        if (!world.isClient) {
-            if (stack.getItem() == ModItems.REDSTONE_LINKING_TOOL) {
-                final BlockEntity entity = world.getBlockEntity(pos);
-                if (entity instanceof RedstoneTransmitterEntity) {
-                    final RedstoneTransmitterEntity emitter = (RedstoneTransmitterEntity) entity;
-                    final BlockPos linkedPos = emitter.getReceiverPos();
-                    final BlockPos recPos = stack.get(ModDataComponentTypes.COORDINATES);
-                    if (linkedPos == null && recPos == null) {
-                        player.sendMessage(Text.literal("Not linked!"), true);
-                        return ActionResult.SUCCESS;
-                    }
-                    if (player.isSneaking() && linkedPos != null) {
-                        if (emitter.unlink()) {
-                            player.sendMessage(Text.literal("Deleted Link!"), true);
-                            return ActionResult.SUCCESS;
-                        }
-                    }
-                    if (!player.isSneaking() && recPos != null)
-                        if (emitter.link(recPos)) {
-                            player.sendMessage(Text.literal("Sucessfully linked to: " + emitter.getReceiverPos().toString()), true);
-                            stack.set(ModDataComponentTypes.COORDINATES, null);
-                            return ActionResult.SUCCESS;
-                        }
-                    if (!player.isSneaking() && linkedPos != null && recPos == null) {
-                        player.sendMessage(Text.literal("Linked Receiver: " + emitter.getReceiverPos().toString()), true);
-                        return ActionResult.SUCCESS;
-                    }
-                }
-            }
-
-        }
-        return ActionResult.FAIL;
-    }
-
     @Override
     protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
-        if (!world.isClient) {
-            final BlockEntity entity = world.getBlockEntity(pos);
-            if (entity instanceof RedstoneTransmitterEntity) {
-                final RedstoneTransmitterEntity emitter = (RedstoneTransmitterEntity) entity;
-                final BlockPos linkedPos = emitter.getReceiverPos();
-                if (linkedPos != null) {
-                    player.sendMessage(Text.literal("Linked to: " + emitter.getReceiverPos().toString()), false);
-                    return ActionResult.SUCCESS;
-                } else {
-                    player.sendMessage(Text.literal("Unlinked!"), false);
-                    return ActionResult.SUCCESS;
-                }
+        if (world.isClient) return ActionResult.SUCCESS;
+
+        if (world.getBlockEntity(pos) instanceof RedstoneTransmitterEntity transmitter) {
+            ItemStack stack = player.getStackInHand(Hand.MAIN_HAND);
+
+            //SET Frequency with Tool
+            if (stack.isOf(ModItems.REDSTONE_LINKING_TOOL) && stack.get(ModDataComponentTypes.FREQUENCY) != null) {
+                int freq = stack.get(ModDataComponentTypes.FREQUENCY);
+                transmitter.setFreq(freq);
+                player.sendMessage(Text.literal("Set Frequency to:" + freq), true);
+                return ActionResult.SUCCESS;
             }
+
+            //Change Frequency by right-clicking without item
+            if (player.isSneaking()) { //Decrease by 1 if sneaking
+                int currentFreq = transmitter.getFreq();
+                transmitter.setFreq(currentFreq > 0 ? currentFreq - 1 : 0);
+            } else { //Increase by 1 without sneaking
+                transmitter.setFreq(transmitter.getFreq() +1);
+            }
+            player.sendMessage(Text.literal("Send-Frequency: " + transmitter.getFreq()), true);
         }
-        return ActionResult.FAIL;
+        return ActionResult.SUCCESS;
     }
 
     @Override
@@ -112,4 +87,10 @@ public class RedstoneTransmitter extends BlockWithEntity implements BlockEntityP
     protected BlockRenderType getRenderType(BlockState state) {
         return BlockRenderType.MODEL;
     }
+
+    @Override
+    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+        builder.add(POWER);
+    }
+
 }

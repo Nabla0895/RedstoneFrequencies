@@ -1,8 +1,11 @@
 package nabla.redstone_frequencies.item.custom;
 
 import nabla.redstone_frequencies.block.ModBlocks;
+import nabla.redstone_frequencies.block.entity.custom.RedstoneReceiverEntity;
+import nabla.redstone_frequencies.block.entity.custom.RedstoneTransmitterEntity;
 import nabla.redstone_frequencies.component.ModDataComponentTypes;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.component.type.TooltipDisplayComponent;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -26,23 +29,30 @@ public class RedstoneLinkingTool extends Item {
     @Override
     public ActionResult useOnBlock(ItemUsageContext context) {
         World world = context.getWorld();
-        BlockPos blockPos = context.getBlockPos();
-        BlockState blockState = world.getBlockState(blockPos);
+        if (world.isClient) return ActionResult.SUCCESS;
 
-        if (blockState.getBlock() == ModBlocks.REDSTONE_RECEIVER) {
-            context.getStack().set(ModDataComponentTypes.COORDINATES, context.getBlockPos());
-            context.getPlayer().sendMessage(Text.literal("Position saved!"), true);
+        BlockEntity be = world.getBlockEntity(context.getBlockPos());
+        ItemStack stack = context.getStack();
+
+        //Copy Frequency from Transmitter or Receiver
+        if (be instanceof RedstoneTransmitterEntity transmitter) {
+            stack.set(ModDataComponentTypes.FREQUENCY, transmitter.getFreq());
+            context.getPlayer().sendMessage(Text.literal("Frequency: " + transmitter.getFreq()), true);
+        } else if (be instanceof RedstoneReceiverEntity receiver) {
+            stack.set(ModDataComponentTypes.FREQUENCY, receiver.getFreq());
+            context.getPlayer().sendMessage(Text.literal("Frequency: " + receiver.getFreq()), true);
         }
         return ActionResult.SUCCESS;
-
     }
 
 
 
     @Override
     public void appendTooltip(ItemStack stack, TooltipContext context, TooltipDisplayComponent displayComponent, Consumer<Text> textConsumer, TooltipType type) {
-        if (stack.get(ModDataComponentTypes.COORDINATES) != null) {
-            textConsumer.accept(Text.literal("Linked Receiver: " + stack.get(ModDataComponentTypes.COORDINATES)));
+        if (stack.get(ModDataComponentTypes.FREQUENCY) != null) {
+            textConsumer.accept(Text.literal("Saved Frequency: " + stack.get(ModDataComponentTypes.FREQUENCY)));
+        } else {
+            textConsumer.accept(Text.literal("No frequency saved."));
         }
     }
 

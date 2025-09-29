@@ -11,6 +11,8 @@ import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.text.Text;
@@ -37,17 +39,6 @@ public class RedstoneReceiver extends BlockWithEntity implements BlockEntityProv
         return CODEC;
     }
 
-//    @Override
-//    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
-//        return validateTicker(type, ModBlockEntities.RECEIVER_BE, (world1, pos, state1, be) -> {
-//            if (!world1.isClient() && !be.isRemoved()) {
-//                if (world1.isChunkLoaded(pos)) {
-//                    be.onServerStart(world1);
-//                }
-//            }
-//        });
-//    }
-
     @Override
     protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
         if (world.isClient) return ActionResult.SUCCESS;
@@ -60,6 +51,7 @@ public class RedstoneReceiver extends BlockWithEntity implements BlockEntityProv
                 int freq = stack.get(ModDataComponentTypes.FREQUENCY);
                 receiver.setFreq(freq);
                 player.sendMessage(Text.literal("Set Frequency to:" + freq), true);
+                world.playSound(null, pos, SoundEvents.ITEM_INK_SAC_USE, SoundCategory.BLOCKS, 0.2F, 2F);
                 return ActionResult.SUCCESS;
             } else { //Change Frequency by right-clicking without Items
                 if (player.isSneaking()) { //Decrease by 1 if sneaking
@@ -69,6 +61,7 @@ public class RedstoneReceiver extends BlockWithEntity implements BlockEntityProv
                     receiver.setFreq(receiver.getFreq() + 1);
                 }
                 player.sendMessage(Text.literal("Receive-Frequency: " + receiver.getFreq()), true);
+                world.playSound(null, pos, SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.BLOCKS, 0.2f, 0.5f);
             }
         }
         return ActionResult.SUCCESS;

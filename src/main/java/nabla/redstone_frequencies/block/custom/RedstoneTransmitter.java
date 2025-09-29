@@ -8,6 +8,8 @@ import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.text.Text;
@@ -46,6 +48,7 @@ public class RedstoneTransmitter extends BlockWithEntity implements BlockEntityP
                 int freq = stack.get(ModDataComponentTypes.FREQUENCY);
                 transmitter.setFreq(freq);
                 player.sendMessage(Text.literal("Set Frequency to:" + freq), true);
+                world.playSound(null, pos, SoundEvents.ITEM_INK_SAC_USE, SoundCategory.BLOCKS, 0.2F, 2F);
                 return ActionResult.SUCCESS;
             } else { //Change Frequency by right-clicking without item
                 if (player.isSneaking()) { //Decrease by 1 if sneaking
@@ -55,6 +58,7 @@ public class RedstoneTransmitter extends BlockWithEntity implements BlockEntityP
                     transmitter.setFreq(transmitter.getFreq() +1);
                 }
                 player.sendMessage(Text.literal("Send-Frequency: " + transmitter.getFreq()), true);
+                world.playSound(null, pos, SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.BLOCKS, 0.2f, 0.5f);
             }
         }
         return ActionResult.SUCCESS;

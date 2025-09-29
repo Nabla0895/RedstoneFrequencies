@@ -11,6 +11,8 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.tooltip.TooltipType;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.BlockPos;
@@ -38,9 +40,11 @@ public class RedstoneLinkingTool extends Item {
         if (be instanceof RedstoneTransmitterEntity transmitter) {
             stack.set(ModDataComponentTypes.FREQUENCY, transmitter.getFreq());
             context.getPlayer().sendMessage(Text.literal("Frequency: " + transmitter.getFreq()), true);
+            world.playSound(null, context.getBlockPos(), SoundEvents.ITEM_INK_SAC_USE, SoundCategory.BLOCKS, 0.2F, 2F);
         } else if (be instanceof RedstoneReceiverEntity receiver) {
             stack.set(ModDataComponentTypes.FREQUENCY, receiver.getFreq());
             context.getPlayer().sendMessage(Text.literal("Frequency: " + receiver.getFreq()), true);
+            world.playSound(null, context.getBlockPos(), SoundEvents.ITEM_INK_SAC_USE, SoundCategory.BLOCKS, 0.2F, 2F);
         }
         return ActionResult.SUCCESS;
     }

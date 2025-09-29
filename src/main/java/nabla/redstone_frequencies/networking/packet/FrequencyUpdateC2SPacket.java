@@ -12,15 +12,16 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public record FrequencyUpdateC2SPacket(BlockPos blockPos, int frequency) implements CustomPayload {
+public record FrequencyUpdateC2SPacket(BlockPos blockPos, int frequency, boolean isPrivate) implements CustomPayload {
     public static final CustomPayload.Id<FrequencyUpdateC2SPacket> ID = new CustomPayload.Id<>(Identifier.of(Redstone_frequencies.MOD_ID, "frequency_update"));
 
     public static final PacketCodec<RegistryByteBuf, FrequencyUpdateC2SPacket> CODEC = PacketCodec.of(
             (value, buf) -> {
                 buf.writeBlockPos(value.blockPos());
                 buf.writeInt(value.frequency());
+                buf.writeBoolean(value.isPrivate());
             },
-            (buf) -> new FrequencyUpdateC2SPacket(buf.readBlockPos(), buf.readInt())
+            (buf) -> new FrequencyUpdateC2SPacket(buf.readBlockPos(), buf.readInt(), buf.readBoolean())
     );
 
     @Override
@@ -34,9 +35,15 @@ public record FrequencyUpdateC2SPacket(BlockPos blockPos, int frequency) impleme
 
         context.server().execute(() -> {
             if(world.getBlockEntity(payload.blockPos()) instanceof RedstoneTransmitterEntity be) {
-                be.setFreq(payload.frequency());
+                if (be.getOwnerUuid().isEmpty() || be.getOwnerUuid().get().equals(player.getUuid())) {
+                    be.setFreq(payload.frequency());
+                    be.setPrivate(payload.isPrivate());
+                }
             } else if(world.getBlockEntity(payload.blockPos()) instanceof RedstoneReceiverEntity be) {
-                be.setFreq(payload.frequency());
+                if (be.getOwnerUuid().isEmpty() || be.getOwnerUuid().get().equals(player.getUuid())) {
+                    be.setFreq(payload.frequency());
+                    be.setPrivate(payload.isPrivate());
+                }
             }
         });
     }

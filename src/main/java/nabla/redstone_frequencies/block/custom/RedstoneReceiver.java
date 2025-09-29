@@ -3,12 +3,14 @@ package nabla.redstone_frequencies.block.custom;
 import com.mojang.serialization.MapCodec;
 import nabla.redstone_frequencies.block.entity.ModBlockEntities;
 import nabla.redstone_frequencies.block.entity.custom.RedstoneReceiverEntity;
+import nabla.redstone_frequencies.block.entity.custom.RedstoneTransmitterEntity;
 import nabla.redstone_frequencies.component.ModDataComponentTypes;
 import nabla.redstone_frequencies.item.ModItems;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.sound.SoundCategory;
@@ -67,6 +69,17 @@ public class RedstoneReceiver extends BlockWithEntity implements BlockEntityProv
             }
         }
         return ActionResult.SUCCESS;
+    }
+
+    @Override
+    public void onPlaced(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack itemStack) {
+        if (!world.isClient && placer instanceof PlayerEntity) {
+            BlockEntity blockEntity = world.getBlockEntity(pos);
+            if (blockEntity instanceof RedstoneReceiverEntity receiverEntity) {
+                receiverEntity.setOwnerUuid(placer.getUuid());
+            }
+        }
+        super.onPlaced(world, pos, state, placer, itemStack);
     }
 
     @Override

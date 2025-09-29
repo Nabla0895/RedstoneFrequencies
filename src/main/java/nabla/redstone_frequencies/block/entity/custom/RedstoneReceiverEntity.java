@@ -15,23 +15,54 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Optional;
+import java.util.UUID;
+
 public class RedstoneReceiverEntity extends BlockEntity{
     public RedstoneReceiverEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.RECEIVER_BE, pos, state);
     }
 
     private int freq = 0;
+    private boolean isPrivate = false;
+    private UUID ownerUuid;
+
+    public boolean isPrivate() {
+        return isPrivate;
+    }
+
+    public void setPrivate(boolean aPrivate) {
+        isPrivate = aPrivate;
+        markDirty();
+    }
+
+    public Optional<UUID> getOwnerUuid() {
+        return Optional.ofNullable(ownerUuid);
+    }
+
+    public void setOwnerUuid(UUID ownerUuid) {
+        this.ownerUuid = ownerUuid;
+        markDirty();
+    }
 
     @Override
     protected void writeData(WriteView view) {
         super.writeData(view);
         view.putInt("Frequency", freq);
+        view.putBoolean("IsPrivate", isPrivate);
+        if (ownerUuid != null) {
+            view.putString("Owner", ownerUuid.toString());
+        }
     }
 
     @Override
     protected void readData(ReadView view) {
         super.readData(view);
-        freq = view.getInt("Frequency", 0);
+        this.freq = view.getInt("Frequency", 0);
+        this.isPrivate = view.getBoolean("IsPrivate", false);
+        if(view.contains("Owner")) {
+            this.ownerUuid = UUID.fromString(view.getString("Owner", null));
+        }
     }
 
     @Override

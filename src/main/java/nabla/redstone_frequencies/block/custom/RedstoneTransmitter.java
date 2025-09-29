@@ -6,6 +6,7 @@ import nabla.redstone_frequencies.component.ModDataComponentTypes;
 import nabla.redstone_frequencies.item.ModItems;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.sound.SoundCategory;
@@ -90,6 +91,17 @@ public class RedstoneTransmitter extends BlockWithEntity implements BlockEntityP
                 transmitter.redstoneUpdate(incomingPower);
             }
         }
+    }
+
+    @Override
+    public void onPlaced(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack itemStack) {
+        if (!world.isClient && placer instanceof PlayerEntity) {
+            BlockEntity blockEntity = world.getBlockEntity(pos);
+            if (blockEntity instanceof RedstoneTransmitterEntity transmitterEntity) {
+                transmitterEntity.setOwnerUuid(placer.getUuid());
+            }
+        }
+        super.onPlaced(world, pos, state, placer, itemStack);
     }
 
     @Override

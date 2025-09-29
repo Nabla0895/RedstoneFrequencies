@@ -20,27 +20,21 @@ public class ClientBlockUseHandler implements UseBlockCallback {
     @Override
     public ActionResult interact(PlayerEntity player, World world, Hand hand, BlockHitResult hitResult) {
         BlockPos pos = hitResult.getBlockPos();
-        BlockState state = world.getBlockState(pos);
         ItemStack stack = player.getStackInHand(hand);
 
         if (hand == Hand.MAIN_HAND && stack.isEmpty()) {
-            if (state.isOf(ModBlocks.REDSTONE_TRANSMITTER)) {
-                if (world.getBlockEntity(pos) instanceof RedstoneTransmitterEntity transmitter) {
-                    MinecraftClient.getInstance().execute(() ->
-                            MinecraftClient.getInstance().setScreen(FrequencyConfigScreen.create(pos, transmitter.getFreq()))
-                    );
-                    return ActionResult.SUCCESS;
-                }
-            } else if (state.isOf(ModBlocks.REDSTONE_RECEIVER)) {
-                if (world.getBlockEntity(pos) instanceof RedstoneReceiverEntity receiver) {
-                    MinecraftClient.getInstance().execute(() ->
-                            MinecraftClient.getInstance().setScreen(FrequencyConfigScreen.create(pos, receiver.getFreq()))
-                    );
-                    return ActionResult.SUCCESS;
-                }
+            if (world.getBlockState(pos).isOf(ModBlocks.REDSTONE_TRANSMITTER) ||
+                    world.getBlockState(pos).isOf(ModBlocks.REDSTONE_RECEIVER)) {
+
+
+                MinecraftClient.getInstance().execute(() ->
+                        MinecraftClient.getInstance().setScreen(FrequencyConfigScreen.create(pos))
+                );
+
+
+                return ActionResult.SUCCESS;
             }
         }
-
         return ActionResult.PASS;
     }
 }

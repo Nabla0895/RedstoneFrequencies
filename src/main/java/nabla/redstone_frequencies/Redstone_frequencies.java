@@ -4,6 +4,7 @@ import nabla.redstone_frequencies.block.ModBlocks;
 import nabla.redstone_frequencies.block.entity.ModBlockEntities;
 import nabla.redstone_frequencies.component.ModDataComponentTypes;
 import nabla.redstone_frequencies.item.ModItems;
+import nabla.redstone_frequencies.networking.ModMessages;
 import net.fabricmc.api.ModInitializer;
 
 import org.slf4j.Logger;
@@ -22,6 +23,7 @@ public class Redstone_frequencies implements ModInitializer {
         ModItems.init();
         ModBlockEntities.init();
         ModDataComponentTypes.init();
+        ModMessages.registerC2SPackets();
         LOGGER.info("If you can read this, " + MOD_ID + " is loaded successfully! Have fun!");
 
     }

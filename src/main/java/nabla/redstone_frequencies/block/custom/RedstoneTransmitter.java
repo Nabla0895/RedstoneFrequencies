@@ -11,7 +11,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.StateManager;
-import net.minecraft.state.property.BooleanProperty;
+import net.minecraft.state.property.IntProperty;
+import net.minecraft.state.property.Properties;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -23,11 +24,11 @@ import org.jetbrains.annotations.Nullable;
 
 public class RedstoneTransmitter extends BlockWithEntity implements BlockEntityProvider {
     public static final MapCodec<RedstoneTransmitter> CODEC = RedstoneTransmitter.createCodec(RedstoneTransmitter::new);
-    public static final BooleanProperty POWER = BooleanProperty.of("power");
+    public static final IntProperty POWER = Properties.POWER;
 
     public RedstoneTransmitter(Settings settings) {
         super(settings);
-        setDefaultState(this.getDefaultState().with(POWER, false));
+        setDefaultState(this.getDefaultState().with(POWER, 0));
     }
 
 
@@ -65,11 +66,9 @@ public class RedstoneTransmitter extends BlockWithEntity implements BlockEntityP
     }
 
     @Override
-    protected void onBlockAdded(BlockState state, World world, BlockPos pos, BlockState oldState, boolean notify) {
-        if (oldState.isOf(state.getBlock())) {
-            if (!world.isClient) {
-                updateState(world, pos, state);
-            }
+    public void onBlockAdded(BlockState state, World world, BlockPos pos, BlockState oldState, boolean notify) {
+        if (!oldState.isOf(state.getBlock()) && !world.isClient()) {
+            updateState(world, pos, state);
         }
     }
 
@@ -81,14 +80,14 @@ public class RedstoneTransmitter extends BlockWithEntity implements BlockEntityP
     }
 
     private void updateState(World world, BlockPos pos, BlockState state) {
-        boolean isReceivingPower = world.isReceivingRedstonePower(pos);
-        if (isReceivingPower != state.get(POWER)) {
-            BlockState newState = state.with(POWER, isReceivingPower);
+        int incomingPower = world.getReceivedRedstonePower(pos);
+        if (incomingPower != state.get(POWER)) {
+            BlockState newState = state.with(POWER, incomingPower);
             world.setBlockState(pos, newState, 2);
 
             BlockEntity be = world.getBlockEntity(pos);
             if (be instanceof RedstoneTransmitterEntity transmitter) {
-                transmitter.redstoneUpdate(isReceivingPower);
+                transmitter.redstoneUpdate(incomingPower);
             }
         }
     }

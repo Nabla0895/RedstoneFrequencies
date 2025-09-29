@@ -44,10 +44,10 @@ public class RedstoneTransmitterEntity extends BlockEntity {
         markDirty();
     }
 
-    public void redstoneUpdate(final boolean enabled) {
+    public void redstoneUpdate(final int power) {
         if (this.world != null && !this.world.isClient()) {
             //Send Signal to FrequencyManager
-            FrequencyManager.broadcast((ServerWorld) this.world, this.freq, enabled);
+            FrequencyManager.broadcast((ServerWorld) this.world, this.freq, power);
         }
     }
 

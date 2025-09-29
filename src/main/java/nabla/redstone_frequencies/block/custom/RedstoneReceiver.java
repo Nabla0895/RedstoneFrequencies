@@ -15,6 +15,8 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
+import net.minecraft.state.property.IntProperty;
+import net.minecraft.state.property.Properties;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -27,11 +29,11 @@ import org.jetbrains.annotations.Nullable;
 
 public class RedstoneReceiver extends BlockWithEntity implements BlockEntityProvider {
     public static final MapCodec<RedstoneReceiver> CODEC = RedstoneReceiver.createCodec(RedstoneReceiver::new);
-    public static final BooleanProperty POWER = BooleanProperty.of("power");
+    public static final IntProperty POWER = Properties.POWER;
 
     public RedstoneReceiver(Settings settings) {
         super(settings);
-        setDefaultState(this.getDefaultState().with(POWER, false));
+        setDefaultState(this.getDefaultState().with(POWER, 0));
     }
 
     @Override
@@ -69,12 +71,12 @@ public class RedstoneReceiver extends BlockWithEntity implements BlockEntityProv
 
     @Override
     protected int getWeakRedstonePower(BlockState state, BlockView world, BlockPos pos, Direction direction) {
-        return this.getStrongRedstonePower(state, world, pos, direction);
+        return state.get(POWER);
     }
 
     @Override
     protected int getStrongRedstonePower(BlockState state, BlockView world, BlockPos pos, Direction direction) {
-        return state.get(POWER) ? 15 : 0;
+        return state.get(POWER);
     }
 
     @Override

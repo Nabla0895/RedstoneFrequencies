@@ -1,10 +1,20 @@
 {
   "variants": {
-    "power=false": {
-      "model": "redstone_frequencies:block/redstone_transmitter"
-    },
-    "power=true": {
-      "model": "redstone_frequencies:block/redstone_transmitter_is_on"
-    }
+    "power=0": { "model": "redstone_frequencies:block/redstone_transmitter" },
+    "power=1": { "model": "redstone_frequencies:block/redstone_transmitter_is_on" },
+    "power=2": { "model": "redstone_frequencies:block/redstone_transmitter_is_on" },
+    "power=3": { "model": "redstone_frequencies:block/redstone_transmitter_is_on" },
+    "power=4": { "model": "redstone_frequencies:block/redstone_transmitter_is_on" },
+    "power=5": { "model": "redstone_frequencies:block/redstone_transmitter_is_on" },
+    "power=6": { "model": "redstone_frequencies:block/redstone_transmitter_is_on" },
+    "power=7": { "model": "redstone_frequencies:block/redstone_transmitter_is_on" },
+    "power=8": { "model": "redstone_frequencies:block/redstone_transmitter_is_on" },
+    "power=9": { "model": "redstone_frequencies:block/redstone_transmitter_is_on" },
+    "power=10": { "model": "redstone_frequencies:block/redstone_transmitter_is_on" },
+    "power=11": { "model": "redstone_frequencies:block/redstone_transmitter_is_on" },
+    "power=12": { "model": "redstone_frequencies:block/redstone_transmitter_is_on" },
+    "power=13": { "model": "redstone_frequencies:block/redstone_transmitter_is_on" },
+    "power=14": { "model": "redstone_frequencies:block/redstone_transmitter_is_on" },
+    "power=15": { "model": "redstone_frequencies:block/redstone_transmitter_is_on" }
   }
 }

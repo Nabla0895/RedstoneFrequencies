@@ -30,7 +30,7 @@ public class FrequencyManager {
     }
 
     //Send Signal of specific Frequency
-    public static void broadcast(ServerWorld world, int freq, boolean powered) {
+    public static void broadcast(ServerWorld world, int freq, int powered) {
         Map<BlockPos, RedstoneReceiverEntity> worldReceivers = receivers.get(world);
         if (worldReceivers == null) return;
 

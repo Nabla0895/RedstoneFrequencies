@@ -23,7 +23,7 @@ public class ClientBlockUseHandler implements UseBlockCallback {
         BlockState state = world.getBlockState(pos);
         ItemStack stack = player.getStackInHand(hand);
 
-        if (!stack.isOf(ModItems.REDSTONE_LINKING_TOOL)) {
+        if (hand == Hand.MAIN_HAND && stack.isEmpty()) {
             if (state.isOf(ModBlocks.REDSTONE_TRANSMITTER)) {
                 if (world.getBlockEntity(pos) instanceof RedstoneTransmitterEntity transmitter) {
                     MinecraftClient.getInstance().execute(() ->

@@ -5,10 +5,7 @@ import nabla.redstone_frequencies.block.entity.ModBlockEntities;
 import nabla.redstone_frequencies.block.entity.custom.RedstoneReceiverEntity;
 import nabla.redstone_frequencies.component.ModDataComponentTypes;
 import nabla.redstone_frequencies.item.ModItems;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockRenderType;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.BlockWithEntity;
+import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
@@ -26,7 +23,7 @@ import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
-public class RedstoneReceiver extends BlockWithEntity {
+public class RedstoneReceiver extends BlockWithEntity implements BlockEntityProvider {
     public static final MapCodec<RedstoneReceiver> CODEC = RedstoneReceiver.createCodec(RedstoneReceiver::new);
     public static final BooleanProperty POWER = BooleanProperty.of("power");
 

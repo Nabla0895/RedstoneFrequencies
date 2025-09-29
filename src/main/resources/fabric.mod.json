@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "redstone_frequencies",
+  "version": "${version}",
+  "name": "Redstone Frequencies",
+  "description": "",
+  "authors": [],
+  "contact": {},
+  "license": "All-Rights-Reserved",
+  "icon": "assets/redstone_frequencies/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-datagen": [
+      "nabla.redstone_frequencies.client.Redstone_frequenciesDataGenerator"
+    ],
+    "client": [
+      "nabla.redstone_frequencies.client.Redstone_frequenciesClient"
+    ],
+    "main": [
+      "nabla.redstone_frequencies.Redstone_frequencies"
+    ]
+  },
+  "mixins": [
+    "redstone_frequencies.mixins.json",
+    {
+      "config": "redstone_frequencies.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "redstone_frequencies:item/redstone_linking_tool"
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "block.redstone_frequencies.redstone_transmitter": "Redstone Transmitter",
+  "block.redstone_frequencies.redstone_receiver": "Redstone Receiver",
+  "item.redstone_frequencies.redstone_linking_tool": "Redstone Linking Tool"
+}

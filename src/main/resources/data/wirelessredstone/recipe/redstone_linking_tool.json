@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "A": "minecraft:redstone",
+    "C": "minecraft:ender_pearl",
+    "D": "minecraft:diamond",
+    "E": "minecraft:iron_ingot"
+  },
+  "pattern": [
+    "ACA",
+    "EDE",
+    "EEE"
+  ],
+  "result": {
+    "count": 1,
+    "id": "redstone_frequencies:redstone_linking_tool"
+  }
+}

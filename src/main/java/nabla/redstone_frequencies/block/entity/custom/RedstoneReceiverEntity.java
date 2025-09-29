@@ -34,8 +34,10 @@ public class RedstoneReceiverEntity extends BlockEntity{
         freq = view.getInt("Frequency", 0);
     }
 
-    public void onServerStart(World world) {
-        if (!world.isClient()) {
+    @Override
+    public void setWorld(World world) {
+        super.setWorld(world);
+        if (world != null && !world.isClient()) {
             FrequencyManager.addReceiver(this);
         }
     }

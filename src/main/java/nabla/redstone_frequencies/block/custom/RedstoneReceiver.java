@@ -37,19 +37,19 @@ public class RedstoneReceiver extends BlockWithEntity implements BlockEntityProv
         return CODEC;
     }
 
-    @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
-        return validateTicker(type, ModBlockEntities.RECEIVER_BE, (world1, pos, state1, be) -> {
-            if (!world1.isClient() && !be.isRemoved()) {
-                if (world1.isChunkLoaded(pos)) {
-                    be.onServerStart(world1);
-                }
-            }
-        });
-    }
+//    @Override
+//    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
+//        return validateTicker(type, ModBlockEntities.RECEIVER_BE, (world1, pos, state1, be) -> {
+//            if (!world1.isClient() && !be.isRemoved()) {
+//                if (world1.isChunkLoaded(pos)) {
+//                    be.onServerStart(world1);
+//                }
+//            }
+//        });
+//    }
 
     @Override
-    protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
+    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
         if (world.isClient) return ActionResult.SUCCESS;
 
         if (world.getBlockEntity(pos) instanceof RedstoneReceiverEntity receiver) {

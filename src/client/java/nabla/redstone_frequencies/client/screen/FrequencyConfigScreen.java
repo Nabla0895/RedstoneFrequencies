@@ -14,24 +14,32 @@ import net.minecraft.util.math.BlockPos;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class FrequencyConfigScreen {
     public static Screen create(BlockPos pos) {
         final AtomicInteger frequency = new AtomicInteger(0);
         final AtomicBoolean isPrivate = new AtomicBoolean(false);
+        final AtomicReference<String> ownerName = new AtomicReference<>("Unknown");
 
         var be = MinecraftClient.getInstance().world.getBlockEntity(pos);
         if (be instanceof RedstoneTransmitterEntity transmitter) {
             frequency.set(transmitter.getFreq());
             isPrivate.set(transmitter.isPrivate());
+            ownerName.set(transmitter.getOwnerName());
         } else if (be instanceof RedstoneReceiverEntity receiver) {
             frequency.set(receiver.getFreq());
             isPrivate.set(receiver.isPrivate());
+            ownerName.set(receiver.getOwnerName());
         }
 
         ConfigBuilder builder = ConfigBuilder.create().setTitle(Text.literal("Choose Frequency"));
         ConfigCategory category = builder.getOrCreateCategory(Text.literal("Settings"));
         ConfigEntryBuilder entryBuilder = builder.entryBuilder();
+
+        category.addEntry(entryBuilder.startTextDescription(
+                Text.literal("Block owner: " + ownerName.get())
+                ).build());
 
         category.addEntry(entryBuilder.startIntField(Text.literal("Frequency"), frequency.get())
                 .setDefaultValue(0)

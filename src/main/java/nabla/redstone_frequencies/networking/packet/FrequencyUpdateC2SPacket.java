@@ -4,6 +4,7 @@ import nabla.redstone_frequencies.Redstone_frequencies;
 import nabla.redstone_frequencies.block.entity.custom.RedstoneReceiverEntity;
 import nabla.redstone_frequencies.block.entity.custom.RedstoneTransmitterEntity;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.block.BlockState;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.CustomPayload;
@@ -34,15 +35,21 @@ public record FrequencyUpdateC2SPacket(BlockPos blockPos, int frequency, boolean
         World world = player.getWorld();
 
         context.server().execute(() -> {
+            BlockPos pos = payload.blockPos();
+            BlockState state = world.getBlockState(pos);
+            boolean hasPermission = player.hasPermissionLevel(2);
+
             if(world.getBlockEntity(payload.blockPos()) instanceof RedstoneTransmitterEntity be) {
-                if (be.getOwnerUuid().isEmpty() || be.getOwnerUuid().get().equals(player.getUuid())) {
+                if (be.getOwnerUuid().isEmpty() || be.getOwnerUuid().get().equals(player.getUuid()) || hasPermission) {
                     be.setFreq(payload.frequency());
                     be.setPrivate(payload.isPrivate());
+                    world.updateListeners(pos, state, state, 3);
                 }
             } else if(world.getBlockEntity(payload.blockPos()) instanceof RedstoneReceiverEntity be) {
-                if (be.getOwnerUuid().isEmpty() || be.getOwnerUuid().get().equals(player.getUuid())) {
+                if (be.getOwnerUuid().isEmpty() || be.getOwnerUuid().get().equals(player.getUuid()) || hasPermission) {
                     be.setFreq(payload.frequency());
                     be.setPrivate(payload.isPrivate());
+                    world.updateListeners(pos, state, state, 3);
                 }
             }
         });

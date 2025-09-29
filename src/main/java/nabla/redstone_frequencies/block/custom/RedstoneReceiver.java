@@ -13,6 +13,7 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.StateManager;
@@ -45,31 +46,33 @@ public class RedstoneReceiver extends BlockWithEntity implements BlockEntityProv
 
     @Override
     protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
-        if (world.isClient) return ActionResult.SUCCESS;
+        if (world.isClient) {
+            return player.getStackInHand(Hand.MAIN_HAND).isEmpty() ? ActionResult.SUCCESS : ActionResult.PASS;
+        }
 
         if (world.getBlockEntity(pos) instanceof RedstoneReceiverEntity receiver) {
             ItemStack stack = player.getStackInHand(Hand.MAIN_HAND);
 
-            //SET Frequency with Tool
-            if (stack.isOf(ModItems.REDSTONE_LINKING_TOOL) && stack.get(ModDataComponentTypes.FREQUENCY) != null) {
-                int freq = stack.get(ModDataComponentTypes.FREQUENCY);
-                receiver.setFreq(freq);
-                player.sendMessage(Text.literal("Set Frequency to:" + freq), true);
-                world.playSound(null, pos, SoundEvents.ITEM_INK_SAC_USE, SoundCategory.BLOCKS, 0.2F, 2F);
-                return ActionResult.SUCCESS;
-            } else { //Change Frequency by right-clicking without Items
-                if (player.isSneaking()) { //Decrease by 1 if sneaking
-                    int currentFreq = receiver.getFreq();
-                    receiver.setFreq(currentFreq > 0 ? currentFreq - 1 : 0);
-                } else {
-                    receiver.setFreq(receiver.getFreq() + 1);
+        if (stack.isOf(ModItems.REDSTONE_LINKING_TOOL)) {
+            if (stack.contains(ModDataComponentTypes.FREQUENCY_SETTINGS)) {
+                var settings = stack.get(ModDataComponentTypes.FREQUENCY_SETTINGS);
+                if (settings != null) {
+                    if (receiver.getOwnerUuid().isEmpty() || receiver.getOwnerUuid().get().equals(player.getUuid()) || player.hasPermissionLevel(2)) {
+                        receiver.setFreq(settings.frequency());
+                        receiver.setPrivate(settings.isPrivate());
+                        player.sendMessage(Text.literal("Settings pasted to Receiver!"), true);
+                        world.playSound(null, pos, SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.BLOCKS, 0.5F, 1.5F);
+                        world.updateListeners(pos, state, state, 3);
+                    } else {
+                        player.sendMessage(Text.literal("You are not owner of this block!"), true);
+                    }
                 }
-                player.sendMessage(Text.literal("Receive-Frequency: " + receiver.getFreq()), true);
-                world.playSound(null, pos, SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.BLOCKS, 0.2f, 0.5f);
             }
+            return ActionResult.CONSUME;
         }
-        return ActionResult.SUCCESS;
     }
+    return ActionResult.PASS;
+}
 
     @Override
     public void onPlaced(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack itemStack) {
@@ -77,6 +80,7 @@ public class RedstoneReceiver extends BlockWithEntity implements BlockEntityProv
             BlockEntity blockEntity = world.getBlockEntity(pos);
             if (blockEntity instanceof RedstoneReceiverEntity receiverEntity) {
                 receiverEntity.setOwnerUuid(placer.getUuid());
+                receiverEntity.setOwnerName(placer.getName().getString());
             }
         }
         super.onPlaced(world, pos, state, placer, itemStack);

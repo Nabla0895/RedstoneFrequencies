@@ -1,32 +1,47 @@
 package nabla.redstone_frequencies.item.custom;
 
-import nabla.redstone_frequencies.block.ModBlocks;
 import nabla.redstone_frequencies.block.entity.custom.RedstoneReceiverEntity;
 import nabla.redstone_frequencies.block.entity.custom.RedstoneTransmitterEntity;
 import nabla.redstone_frequencies.component.ModDataComponentTypes;
-import net.minecraft.block.BlockState;
+import nabla.redstone_frequencies.component.custom.FrequencySettingsPayload;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.component.type.TooltipDisplayComponent;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.tooltip.TooltipType;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.Hand;
 import net.minecraft.world.World;
-
 import java.util.function.Consumer;
 
 public class RedstoneLinkingTool extends Item {
-
-
     public RedstoneLinkingTool(Settings settings) {
         super(settings);
     }
 
+    @Override
+    public ActionResult use(World world, PlayerEntity user, Hand hand) {
+        ItemStack stack = user.getStackInHand(hand);
+
+        if (user.isSneaking()) {
+            stack.remove(ModDataComponentTypes.FREQUENCY_SETTINGS); // Clear saved Settings
+
+            if (world.isClient) {
+                user.sendMessage(Text.literal("Tool reset successfully!"), true);
+            }
+            world.playSound(user, user.getBlockPos(), SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS, 0.5F, 0.8F);
+
+            return ActionResult.SUCCESS;
+        }
+
+        return ActionResult.PASS;
+    }
 
     @Override
     public ActionResult useOnBlock(ItemUsageContext context) {
@@ -35,30 +50,56 @@ public class RedstoneLinkingTool extends Item {
 
         BlockEntity be = world.getBlockEntity(context.getBlockPos());
         ItemStack stack = context.getStack();
+        PlayerEntity player = context.getPlayer();
 
-        //Copy Frequency from Transmitter or Receiver
+        // Case 1: Copy from Block
         if (be instanceof RedstoneTransmitterEntity transmitter) {
-            stack.set(ModDataComponentTypes.FREQUENCY, transmitter.getFreq());
-            context.getPlayer().sendMessage(Text.literal("Frequency: " + transmitter.getFreq()), true);
-            world.playSound(null, context.getBlockPos(), SoundEvents.ITEM_INK_SAC_USE, SoundCategory.BLOCKS, 0.2F, 2F);
-        } else if (be instanceof RedstoneReceiverEntity receiver) {
-            stack.set(ModDataComponentTypes.FREQUENCY, receiver.getFreq());
-            context.getPlayer().sendMessage(Text.literal("Frequency: " + receiver.getFreq()), true);
-            world.playSound(null, context.getBlockPos(), SoundEvents.ITEM_INK_SAC_USE, SoundCategory.BLOCKS, 0.2F, 2F);
+            FrequencySettingsPayload payload = new FrequencySettingsPayload(transmitter.getFreq(), transmitter.isPrivate());
+            stack.set(ModDataComponentTypes.FREQUENCY_SETTINGS, payload);
+            player.sendMessage(Text.literal("Copied settings! (F: " + payload.frequency() + ", P: " + payload.isPrivate() + ")"), true);
+            world.playSound(null, context.getBlockPos(), SoundEvents.UI_BUTTON_CLICK.value(), SoundCategory.BLOCKS, 0.5F, 1.5F);
+            return ActionResult.SUCCESS;
         }
-        return ActionResult.SUCCESS;
+        if (be instanceof RedstoneReceiverEntity receiver) {
+            FrequencySettingsPayload payload = new FrequencySettingsPayload(receiver.getFreq(), receiver.isPrivate());
+            stack.set(ModDataComponentTypes.FREQUENCY_SETTINGS, payload);
+            player.sendMessage(Text.literal("Copied settings! (F: " + payload.frequency() + ", P: " + payload.isPrivate() + ")"), true);
+            world.playSound(null, context.getBlockPos(), SoundEvents.UI_BUTTON_CLICK.value(), SoundCategory.BLOCKS, 0.5F, 1.5F);
+            return ActionResult.SUCCESS;
+        }
+
+        // Case 2: Paste on a Block
+        FrequencySettingsPayload savedSettings = stack.get(ModDataComponentTypes.FREQUENCY_SETTINGS);
+        if (savedSettings != null && be instanceof RedstoneTransmitterEntity transmitter) {
+            transmitter.setFreq(savedSettings.frequency());
+            transmitter.setPrivate(savedSettings.isPrivate());
+            //player.sendMessage(Text.literal("Paste successfully!"), true);
+            world.playSound(null, context.getBlockPos(), SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.BLOCKS, 0.5F, 1.5F);
+            // Client-Update auslösen!
+            ((ServerWorld) world).getChunkManager().markForUpdate(context.getBlockPos());
+            return ActionResult.SUCCESS;
+        }
+        if (savedSettings != null && be instanceof RedstoneReceiverEntity receiver) {
+            receiver.setFreq(savedSettings.frequency());
+            receiver.setPrivate(savedSettings.isPrivate());
+            //player.sendMessage(Text.literal("Paste successfully!"), true);
+            world.playSound(null, context.getBlockPos(), SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.BLOCKS, 0.5F, 1.5F);
+            // Client-Update auslösen!
+            ((ServerWorld) world).getChunkManager().markForUpdate(context.getBlockPos());
+            return ActionResult.SUCCESS;
+        }
+
+        return ActionResult.PASS;
     }
-
-
 
     @Override
     public void appendTooltip(ItemStack stack, TooltipContext context, TooltipDisplayComponent displayComponent, Consumer<Text> textConsumer, TooltipType type) {
-        if (stack.get(ModDataComponentTypes.FREQUENCY) != null) {
-            textConsumer.accept(Text.literal("Saved Frequency: " + stack.get(ModDataComponentTypes.FREQUENCY)));
+        FrequencySettingsPayload settings = stack.get(ModDataComponentTypes.FREQUENCY_SETTINGS);
+        if (settings != null) {
+            textConsumer.accept(Text.literal("Saved frequency: " + settings.frequency()));
+            textConsumer.accept(Text.literal("Mode: " + (settings.isPrivate() ? "Privat" : "Öffentlich")));
         } else {
-            textConsumer.accept(Text.literal("No frequency saved."));
+            textConsumer.accept(Text.literal("No settings saved."));
         }
     }
-
-
 }

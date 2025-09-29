@@ -26,6 +26,7 @@ public class RedstoneReceiverEntity extends BlockEntity{
     private int freq = 0;
     private boolean isPrivate = false;
     private UUID ownerUuid;
+    private String ownerName = "Unknown";
 
     public boolean isPrivate() {
         return isPrivate;
@@ -45,6 +46,15 @@ public class RedstoneReceiverEntity extends BlockEntity{
         markDirty();
     }
 
+    public String getOwnerName() {
+        return ownerName;
+    }
+
+    public void setOwnerName(String ownerName) {
+        this.ownerName = ownerName;
+        markDirty();
+    }
+
     @Override
     protected void writeData(WriteView view) {
         super.writeData(view);
@@ -53,6 +63,7 @@ public class RedstoneReceiverEntity extends BlockEntity{
         if (ownerUuid != null) {
             view.putString("Owner", ownerUuid.toString());
         }
+        view.putString("OwnerName", ownerName);
     }
 
     @Override
@@ -60,9 +71,13 @@ public class RedstoneReceiverEntity extends BlockEntity{
         super.readData(view);
         this.freq = view.getInt("Frequency", 0);
         this.isPrivate = view.getBoolean("IsPrivate", false);
-        if(view.contains("Owner")) {
-            this.ownerUuid = UUID.fromString(view.getString("Owner", null));
+        if (view.contains("Owner")) {
+            String ownerString = view.getString("Owner", null);
+            if (ownerString != null && !ownerString.isEmpty()) {
+                this.ownerUuid = UUID.fromString(ownerString);
+            }
         }
+        this.ownerName = view.getString("OwnerName", "Unknown");
     }
 
     @Override

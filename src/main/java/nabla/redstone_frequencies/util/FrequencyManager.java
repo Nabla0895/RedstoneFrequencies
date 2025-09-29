@@ -40,14 +40,14 @@ public class FrequencyManager {
 
         final int frequency = transmitter.getFreq();
         final boolean isTransmitterPrivate = transmitter.isPrivate();
-        final UUID transmitterrOwner = transmitter.getOwnerUuid().orElse(null);
+        final UUID transmitterOwner = transmitter.getOwnerUuid().orElse(null);
 
         worldReceivers.forEach((pos, receiver) -> {
             if (receiver.getFreq() == frequency) { // 1. Frequency Test - have to be the same
                 boolean shouldActivate = false;
 
                 if (isTransmitterPrivate) { // 2. Is transmitter public or private?
-                    if (receiver.isPrivate() && Objects.equals(transmitterrOwner, receiver.getOwnerUuid().orElse(null))) { // Receiver AND Transmitter has to be private AND has to be the same owner
+                    if (receiver.isPrivate() && Objects.equals(transmitterOwner, receiver.getOwnerUuid().orElse(null))) { // Receiver AND Transmitter has to be private AND has to be the same owner
                         shouldActivate = true;
                     }
                 } else { // If Transmitter is public, Receiver also have to be public

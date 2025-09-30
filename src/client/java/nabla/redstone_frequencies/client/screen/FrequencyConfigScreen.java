@@ -48,7 +48,7 @@ public class FrequencyConfigScreen {
 
         category.addEntry(entryBuilder.startBooleanToggle(Text.literal("Private"), isPrivate.get())
                 .setDefaultValue(false)
-                .setTooltip(Text.literal("If activated, Signal will just be send to Receivers, you placed in the World."))
+                .setTooltip(Text.literal("If activated, Signal will just be send to Receivers, you placed in the World with the same frequency."))
                 .setSaveConsumer(isPrivate::set)
                 .build());
 

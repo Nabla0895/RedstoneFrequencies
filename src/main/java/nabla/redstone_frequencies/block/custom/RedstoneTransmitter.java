@@ -41,7 +41,7 @@ public class RedstoneTransmitter extends BlockWithEntity implements BlockEntityP
 
     @Override
     public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
-        if (world.isClient) {
+        if (world.isClient()) {
             return player.getStackInHand(Hand.MAIN_HAND).isEmpty() ? ActionResult.SUCCESS : ActionResult.PASS;
         }
 
@@ -78,7 +78,7 @@ public class RedstoneTransmitter extends BlockWithEntity implements BlockEntityP
 
     @Override
     protected void neighborUpdate(BlockState state, World world, BlockPos pos, Block sourceBlock, @Nullable WireOrientation wireOrientation, boolean notify) {
-        if (!world.isClient) {
+        if (!world.isClient()) {
             updateState(world, pos, state);
         }
     }
@@ -98,7 +98,7 @@ public class RedstoneTransmitter extends BlockWithEntity implements BlockEntityP
 
     @Override
     public void onPlaced(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack itemStack) {
-        if (!world.isClient && placer instanceof PlayerEntity) {
+        if (!world.isClient() && placer instanceof PlayerEntity) {
             BlockEntity blockEntity = world.getBlockEntity(pos);
             if (blockEntity instanceof RedstoneTransmitterEntity transmitterEntity) {
                 transmitterEntity.setOwnerUuid(placer.getUuid());

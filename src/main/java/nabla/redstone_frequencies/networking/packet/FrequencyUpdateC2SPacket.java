@@ -9,6 +9,7 @@ import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -32,7 +33,7 @@ public record FrequencyUpdateC2SPacket(BlockPos blockPos, int frequency, boolean
 
     public static void receive(FrequencyUpdateC2SPacket payload, ServerPlayNetworking.Context context) {
         ServerPlayerEntity player = context.player();
-        World world = player.getWorld();
+        ServerWorld world = player.getEntityWorld();
 
         context.server().execute(() -> {
             BlockPos pos = payload.blockPos();

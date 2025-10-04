@@ -11,6 +11,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.tooltip.TooltipType;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
@@ -32,7 +33,7 @@ public class RedstoneLinkingTool extends Item {
         if (user.isSneaking()) {
             stack.remove(ModDataComponentTypes.FREQUENCY_SETTINGS); // Clear saved Settings
 
-            if (world.isClient) {
+            if (world.isClient()) {
                 user.sendMessage(Text.literal("Tool reset successfully!"), true);
             }
             world.playSound(user, user.getBlockPos(), SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS, 0.5F, 0.8F);
@@ -46,11 +47,11 @@ public class RedstoneLinkingTool extends Item {
     @Override
     public ActionResult useOnBlock(ItemUsageContext context) {
         World world = context.getWorld();
-        if (world.isClient) return ActionResult.SUCCESS;
+        PlayerEntity player = context.getPlayer();
+        if (player == null || !(player instanceof ServerPlayerEntity)) return ActionResult.SUCCESS;
 
         BlockEntity be = world.getBlockEntity(context.getBlockPos());
         ItemStack stack = context.getStack();
-        PlayerEntity player = context.getPlayer();
 
         // Case 1: Copy from Block
         if (be instanceof RedstoneTransmitterEntity transmitter) {

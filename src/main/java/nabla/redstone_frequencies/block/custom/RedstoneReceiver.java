@@ -13,6 +13,7 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
@@ -46,7 +47,7 @@ public class RedstoneReceiver extends BlockWithEntity implements BlockEntityProv
 
     @Override
     protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
-        if (world.isClient) {
+        if (!(player instanceof ServerPlayerEntity)) {
             return player.getStackInHand(Hand.MAIN_HAND).isEmpty() ? ActionResult.SUCCESS : ActionResult.PASS;
         }
 
@@ -76,7 +77,7 @@ public class RedstoneReceiver extends BlockWithEntity implements BlockEntityProv
 
     @Override
     public void onPlaced(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack itemStack) {
-        if (!world.isClient && placer instanceof PlayerEntity) {
+        if (!world.isClient() && placer instanceof PlayerEntity) {
             BlockEntity blockEntity = world.getBlockEntity(pos);
             if (blockEntity instanceof RedstoneReceiverEntity receiverEntity) {
                 receiverEntity.setOwnerUuid(placer.getUuid());
